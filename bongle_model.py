@@ -829,7 +829,248 @@ def build_otis() -> Model:
     return m
 
 
-CHARACTERS = {"finn": build_finn, "jake": build_jake, "otis": build_otis}
+# --------------------------------------------------------------------------
+# Mordecai - a tall, lanky blue jay
+# --------------------------------------------------------------------------
+
+MORDECAI = {
+    "blue": "#4e8fce", "blue_shade": "#3a6fa8", "blue_deep": "#2b5482",
+    "crest": "#3f7ab5", "crest_tip": "#2f5f92",
+    "face": "#e9f2f9", "face_shade": "#c6d8e8",
+    "chest": "#dbe9f4", "chest_shade": "#b9cde0",
+    "nape": "#1d1d24",
+    "beak": "#4c4c55", "beak_shade": "#34343c",
+    "leg": "#41414a", "leg_shade": "#2d2d34", "toe": "#5a5a64",
+    "wingbar": "#eff5fa",
+    "pupil": "#16161c",
+}
+
+
+def build_mordecai() -> Model:
+    """Mordecai: all legs and neck. Tallest of the set, deliberately spindly."""
+    c = MORDECAI
+    m = Model("mordecai_custom")
+
+    m.add("foot_right", (-4, 0, -4), (3, 1, 5))
+    m.add("foot_left", (1, 0, -4), (3, 1, 5))
+    m.add("leg_right", (-3, 1, -1), (2, 13, 2), origin=(-2, 14, 0))
+    m.add("leg_left", (1, 1, -1), (2, 13, 2), origin=(2, 14, 0))
+    m.add("torso", (-3, 14, -2), (6, 10, 4), origin=(0, 14, 0))
+    m.add("wing_right", (-5, 15, -1), (2, 10, 3), origin=(-4, 24, 0))
+    m.add("wing_left", (3, 15, -1), (2, 10, 3), origin=(4, 24, 0))
+    m.add("tail", (-2, 11, 2), (4, 5, 2), origin=(0, 16, 2),
+          rotation=(18, 0, 0))
+    m.add("head", (-3, 24, -3), (6, 7, 6), origin=(0, 24, 0))
+    # Beak sits just below the eye row (head rows 2-3 = y27..29), not across it.
+    m.add("beak", (-1, 25, -8), (2, 2, 5))
+    # Crest: base plus a narrower tip on one shared pivot and angle, so the
+    # taper holds together as it sweeps back.
+    m.add("crest", (-1, 30, -2), (2, 3, 4), origin=(0, 30, 0),
+          rotation=(-18, 0, 0))
+    m.add("crest_tip", (-0.5, 33, -1), (1, 2, 3), origin=(0, 30, 0),
+          rotation=(-18, 0, 0))
+
+    m.bone("waist", None, (0, 14, 0))
+    m.bone("body", "waist", (0, 14, 0), ["torso", "tail"])
+    m.bone("head", "waist", (0, 24, 0), ["head", "beak", "crest", "crest_tip"])
+    m.bone("arm_left", "waist", (4, 24, 0), ["wing_left"])
+    m.bone("arm_right", "waist", (-4, 24, 0), ["wing_right"])
+    m.bone("leg_left", None, (2, 14, 0), ["leg_left", "foot_left"])
+    m.bone("leg_right", None, (-2, 14, 0), ["leg_right", "foot_right"])
+    m.pack()
+
+    # --- head: blue crown, big white face, black nape at the back
+    m.fill("head", c["blue"])
+    face = m.face("head", "front")
+    face.rows(2, 6, c["face"])
+    face.rect(1, 2, 2, 3, c["pupil"])
+    face.rect(3, 2, 4, 3, c["pupil"])
+    face.set(1, 2, c["face"])                    # glint in each eye
+    face.set(3, 2, c["face"])
+    m.face("head", "back").fill(c["blue"])
+    m.face("head", "back").rows(3, 6, c["nape"])   # collar, not a black skull
+    m.face("head", "bottom").fill(c["face_shade"])
+    for f in ("left", "right"):
+        m.face("head", f).rows(5, 6, c["face_shade"])
+        m.face("head", f).shade_edges(0.07)
+    m.face("head", "top").shade_edges(0.05)
+
+    # --- beak
+    m.fill("beak", c["beak"])
+    m.face("beak", "bottom").fill(c["beak_shade"])
+    m.face("beak", "front").fill(c["beak_shade"])
+    for f in ("left", "right"):
+        m.face("beak", f).shade_edges(0.1)
+
+    # --- crest
+    m.fill("crest", c["crest"])
+    m.fill("crest_tip", c["crest_tip"])
+    m.face("crest", "bottom").fill(c["blue_deep"])
+    m.face("crest_tip", "top").fill(c["crest_tip"])
+
+    # --- torso: blue with a pale breast
+    m.fill("torso", c["blue"])
+    m.face("torso", "front").rect(1, 2, 4, 9, c["chest"])
+    m.face("torso", "front").rect(1, 9, 4, 9, c["chest_shade"])
+    m.face("torso", "top").fill(c["nape"])       # nape meets the shoulders
+    m.face("torso", "bottom").fill(c["chest_shade"])
+    for f in ("left", "right", "back"):
+        m.face("torso", f).shade_edges(0.08)
+
+    # --- wings: blue jay wing bars
+    for wing in ("wing_left", "wing_right"):
+        m.fill(wing, c["blue"])
+        for f in ("front", "back", "left", "right"):
+            fv = m.face(wing, f)
+            fv.rows(3, 3, c["wingbar"])
+            fv.rows(5, 5, c["wingbar"])
+            fv.rows(8, 9, c["blue_deep"])        # primaries at the tip
+        m.face(wing, "top").fill(c["blue_shade"])
+        m.face(wing, "bottom").fill(c["blue_deep"])
+
+    # --- tail feathers
+    m.fill("tail", c["blue_deep"])
+    for f in ("left", "right", "back"):
+        m.face("tail", f).rows(1, 1, c["blue"])
+        m.face("tail", f).rows(3, 3, c["blue"])
+    m.face("tail", "bottom").fill(c["blue_shade"])
+
+    # --- legs and feet
+    for leg in ("leg_left", "leg_right"):
+        m.fill(leg, c["leg"])
+        m.face(leg, "top").fill(c["leg_shade"])
+        m.face(leg, "bottom").fill(c["leg_shade"])
+        for f in ("left", "right", "back"):
+            m.face(leg, f).shade_edges(0.1)
+    for foot in ("foot_left", "foot_right"):
+        m.fill(foot, c["leg"])
+        m.face(foot, "top").fill(c["leg_shade"])
+        m.face(foot, "bottom").fill(c["leg_shade"])
+        m.face(foot, "front").fill(c["toe"])
+
+    return m
+
+
+# --------------------------------------------------------------------------
+# Rigby - a short, stocky raccoon
+# --------------------------------------------------------------------------
+
+RIGBY = {
+    "fur": "#a8825c", "fur_shade": "#8d6a48", "fur_deep": "#6f5238",
+    "belly": "#d3b891", "belly_shade": "#b89b74",
+    "mask": "#5b4230", "mask_shade": "#43301f",
+    "nose": "#2e2118",
+    "ear_in": "#c49a7c",
+    "paw": "#6a4e36",
+    "eye": "#f7f5ef", "pupil": "#1b1712",
+    "tooth": "#fbfaf4",
+}
+
+
+def build_rigby() -> Model:
+    """Rigby: half Mordecai's height, twice his width, plus a ringed tail."""
+    c = RIGBY
+    m = Model("rigby_custom")
+
+    m.add("leg_right", (-3, 0, -1), (2, 3, 3))
+    m.add("leg_left", (1, 0, -1), (2, 3, 3))
+    m.add("torso", (-3.5, 3, -2.5), (7, 7, 5), origin=(0, 3, 0))
+    m.add("arm_right", (-5, 4, -1), (2, 5, 2), origin=(-4, 9, 0))
+    m.add("arm_left", (3, 4, -1), (2, 5, 2), origin=(4, 9, 0))
+    m.add("head", (-3.5, 10, -3.5), (7, 6, 7), origin=(0, 10, 0))
+    m.add("snout", (-1.5, 10.5, -6.5), (3, 2, 3))
+    # Ears sit ABOVE their pivot, so the right ear takes the positive angle.
+    m.add("ear_right", (-3, 16, -1), (2, 2, 2), origin=(-2, 16, 0),
+          rotation=(0, 0, 10))
+    m.add("ear_left", (1, 16, -1), (2, 2, 2), origin=(2, 16, 0),
+          rotation=(0, 0, -10))
+    # Tail in three segments, each angled further, tracing a curl up and back.
+    m.add("tail_base", (-1, 5, 2), (2, 3, 4), origin=(0, 7, 2.5),
+          rotation=(-25, 0, 0))
+    m.add("tail_mid", (-1, 8, 4), (2, 3, 4), origin=(0, 9, 4),
+          rotation=(-50, 0, 0))
+    m.add("tail_tip", (-1, 11, 4), (2, 2, 3), origin=(0, 12, 4),
+          rotation=(-75, 0, 0))
+
+    m.bone("waist", None, (0, 3, 0))
+    m.bone("body", "waist", (0, 3, 0),
+           ["torso", "tail_base", "tail_mid", "tail_tip"])
+    m.bone("head", "waist", (0, 10, 0),
+           ["head", "snout", "ear_right", "ear_left"])
+    m.bone("arm_left", "waist", (4, 9, 0), ["arm_left"])
+    m.bone("arm_right", "waist", (-4, 9, 0), ["arm_right"])
+    m.bone("leg_left", None, (2, 3, 0), ["leg_left"])
+    m.bone("leg_right", None, (-2, 3, 0), ["leg_right"])
+    m.pack()
+
+    # --- head: bandit mask across the eyes, pale muzzle below
+    m.fill("head", c["fur"])
+    face = m.face("head", "front")
+    face.rows(1, 2, c["mask"])
+    face.rect(1, 1, 2, 2, c["eye"])
+    face.rect(4, 1, 5, 2, c["eye"])
+    face.set(2, 2, c["pupil"])
+    face.set(4, 2, c["pupil"])
+    face.rows(4, 5, c["belly"])
+    m.face("head", "bottom").fill(c["belly_shade"])
+    for f in ("left", "right"):
+        m.face("head", f).rows(1, 2, c["mask_shade"])
+        m.face("head", f).shade_edges(0.07)
+    m.face("head", "back").shade_edges(0.08)
+    m.face("head", "top").fill(c["fur_shade"])
+
+    # --- snout: pale, dark nose on top of the tip, buck teeth underneath
+    m.fill("snout", c["belly"])
+    m.face("snout", "front").rows(0, 0, c["nose"])
+    m.face("snout", "top").fill(c["nose"])
+    m.face("snout", "front").rect(1, 1, 1, 1, c["tooth"])
+    m.face("snout", "bottom").rect(1, 0, 1, 1, c["tooth"])
+    for f in ("left", "right"):
+        m.face("snout", f).shade_edges(0.08)
+
+    # --- ears
+    for ear, inner in (("ear_right", "left"), ("ear_left", "right")):
+        m.fill(ear, c["fur"])
+        m.face(ear, inner).fill(c["ear_in"])
+        m.face(ear, "top").fill(c["fur_shade"])
+        m.face(ear, "bottom").fill(c["fur_deep"])
+
+    # --- torso: pale belly panel
+    m.fill("torso", c["fur"])
+    m.face("torso", "front").rect(1, 1, 5, 6, c["belly"])
+    m.face("torso", "front").rect(1, 6, 5, 6, c["belly_shade"])
+    m.face("torso", "top").fill(c["fur_shade"])
+    m.face("torso", "bottom").fill(c["belly_shade"])
+    for f in ("left", "right", "back"):
+        m.face("torso", f).shade_edges(0.08)
+
+    # --- limbs with dark paws
+    for limb in ("arm_left", "arm_right", "leg_left", "leg_right"):
+        h = m.boxes[limb].size[1]
+        m.fill(limb, c["fur"])
+        for f in ("front", "back", "left", "right"):
+            m.face(limb, f).rows(h - 2, h - 1, c["paw"])
+        m.face(limb, "bottom").fill(c["paw"])
+        m.face(limb, "top").fill(c["fur_shade"])
+
+    # --- ringed tail: alternate every row across all three segments
+    for seg in ("tail_base", "tail_mid", "tail_tip"):
+        m.fill(seg, c["fur"])
+        for f in ("front", "back", "left", "right"):
+            fv = m.face(seg, f)
+            for y in range(fv.h):
+                fv.rows(y, y, c["fur"] if y % 2 == 0 else c["mask"])
+        m.face(seg, "top").fill(c["fur_shade"])
+        m.face(seg, "bottom").fill(c["mask_shade"])
+    m.face("tail_tip", "top").fill(c["mask_shade"])
+
+    return m
+
+
+CHARACTERS = {
+    "finn": build_finn, "jake": build_jake, "otis": build_otis,
+    "mordecai": build_mordecai, "rigby": build_rigby,
+}
 
 
 # --------------------------------------------------------------------------

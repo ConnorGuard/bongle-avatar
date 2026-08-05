@@ -73,8 +73,10 @@ python bongle_model.py all --preview --bg "#2c3040"
 
 | character | boxes | height | notes |
 | --- | --- | --- | --- |
+| `mordecai` | 12 | 35 units | spindly legs, swept-back crest as a tapered pair, long beak, wing bars |
 | `finn` | 15 | 32 units | bear hat as real geometry, backpack in the optional `back` bone |
 | `otis` | 16 | 24 units | staffy build, upright pointy ears, harness as three boxes |
+| `rigby` | 12 | 18 units | stocky, bandit mask, three-segment ringed tail curling up and back |
 | `jake` | 10 | 17 units | floppy ears rotated 22° outward, tail angled up |
 
 Because rotation is per-box, ears really flop and tails really angle — things a
@@ -226,8 +228,8 @@ Python 3.10+ and [Pillow](https://pillow.readthedocs.io). Nothing else.
 
 ## Credits
 
-Finn and Jake are fan renditions of characters from *Adventure Time*, made for
-personal use. Otis is my dog.
+Finn and Jake are fan renditions of characters from *Adventure Time*; Mordecai
+and Rigby from *Regular Show*. All made for personal use. Otis is my dog.
 
 ## License
 
