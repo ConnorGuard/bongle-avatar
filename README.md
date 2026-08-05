@@ -228,3 +228,7 @@ Python 3.10+ and [Pillow](https://pillow.readthedocs.io). Nothing else.
 
 Finn and Jake are fan renditions of characters from *Adventure Time*, made for
 personal use. Otis is my dog.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
