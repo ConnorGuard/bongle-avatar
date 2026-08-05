@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Generated output — every one of these is reproducible with one command,
+# so none of it belongs in the repo. Curated samples live in examples/.
+models/
+skins/
+out/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
